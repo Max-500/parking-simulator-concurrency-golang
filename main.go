@@ -1,17 +1,16 @@
 package main
 
 import (
-	_ "fmt"
 	"image"
-	_"math/rand"
-	"os"
-
 	_ "image/png"
-
+	"os"
+	"parking-simulator/controllers"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 )
+
+// "./assets/car.png"
 
 func loadPicture(path string) (pixel.Picture, error) {
 	file, err := os.Open(path)
@@ -27,56 +26,41 @@ func loadPicture(path string) (pixel.Picture, error) {
 }
 
 func run() {
-	// ancho, largo
 	cfg := pixelgl.WindowConfig{
 		Title:  "Parking Simulator!!!",
 		Bounds: pixel.R(0, 0, 1024, 768),
 	}
+
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	picParking, err := loadPicture("./assets/parking3.png")
+	picEntranceClose, err := loadPicture("./assets/open-entrance.png")
 	if err != nil {
 		panic(err)
 	}
 
-	picStreet, err := loadPicture("./assets/street3.png")
-	if err != nil {
-		panic(err)
-	}
-
-
-	picCar, err := loadPicture("./assets/car.png")
-	if err != nil {
-		panic(err)
-	}
-
-	picEntranceClose, err := loadPicture("./assets/open-entrance1.png")
-	if err != nil {
-		panic(err)
-	}
-
-	parking := pixel.NewSprite(picParking, picParking.Bounds())
-	street := pixel.NewSprite(picStreet, picStreet.Bounds())
-	car := pixel.NewSprite(picCar, picCar.Bounds())
 	closeEntrance := pixel.NewSprite(picEntranceClose, picEntranceClose.Bounds())
 
+	parkingController := controllers.NewParkingController(win)
+	parkingController.LlamarMiFuncion()
+
+	entranceController := controllers.NewEntranceController(win)
+	entranceController.LoadStates()
+
+	
 	for !win.Closed() {
 		win.Clear(colornames.Black)
 
-		matrix := pixel.IM
-		matrix = pixel.IM.Moved(pixel.V(512, 469))
-		parking.Draw(win, matrix)
+		parkingController.PaintParking()
+		parkingController.PaintStreet()
 
-
-		street.Draw(win, pixel.IM.Moved(pixel.V(512, 85)))
-		car.Draw(win, pixel.IM.Moved(pixel.V(112, 469)))
 		closeEntrance.Draw(win, pixel.IM.Moved(pixel.V(920, 200)))
 
 		win.Update()
 	}
+
 }
 
 func main() {
