@@ -23,8 +23,6 @@ func (ec *EntranceController) LoadStates() {
 	ec.view.SetStateImages(imgs)
 }
 
-func (ec * EntranceController) PaintEntrance() {
-	for {
-		
-	}
+func (ec * EntranceController) PaintEntrance(pos int) {
+	ec.view.PainEntrance(pos)
 }

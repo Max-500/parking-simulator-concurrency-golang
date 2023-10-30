@@ -33,3 +33,7 @@ func (ew *EntranceView) LoadStatesImages() [3]pixel.Sprite {
 func (ew *EntranceView) SetStateImages(imgs [3]pixel.Sprite) {
 	ew.states = imgs
 }
+
+func (ew *EntranceView) PainEntrance(img int) {
+	ew.states[img].Draw(ew.win, pixel.IM.Moved(pixel.V(920, 200)))
+}

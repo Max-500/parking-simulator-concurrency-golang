@@ -9,7 +9,6 @@ import (
 type Utils struct {
 	pic *pixel.Picture
 	sprite *pixel.Sprite
-
 }
 
 func (u *Utils) LoadPicture(path string) (pixel.Picture, error) {

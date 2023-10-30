@@ -1,29 +1,15 @@
 package main
 
 import (
-	"image"
+	_"fmt"
 	_ "image/png"
-	"os"
 	"parking-simulator/controllers"
+	"parking-simulator/models"
+	"time"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 )
-
-// "./assets/car.png"
-
-func loadPicture(path string) (pixel.Picture, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return nil, err
-	}
-	return pixel.PictureDataFromImage(img), nil
-}
 
 func run() {
 	cfg := pixelgl.WindowConfig{
@@ -36,31 +22,49 @@ func run() {
 		panic(err)
 	}
 
-	picEntranceClose, err := loadPicture("./assets/open-entrance.png")
-	if err != nil {
-		panic(err)
-	}
+	// Canales
+	carChannel := make(chan models.Car)
 
-	closeEntrance := pixel.NewSprite(picEntranceClose, picEntranceClose.Bounds())
-
+	// Controladores
 	parkingController := controllers.NewParkingController(win)
-	parkingController.LlamarMiFuncion()
-
 	entranceController := controllers.NewEntranceController(win)
-	entranceController.LoadStates()
+	carController := controllers.NewCarController(win)
 
-	
+	carController.LoadSprite()
+
+
+	go parkingController.Park(&carChannel, entranceController, carController)
+	entranceController.LoadStates()
+	go carController.GenerateCars(30, &carChannel)
+
+	imageChangeChannel := make(chan int)
+
+	go func() {
+		a := 0
+		for {
+			imageChangeChannel <- a
+			a = (a + 1) % 2 // Cambia el valor entre 0 y 1
+			time.Sleep(2 * time.Second)
+		}
+	}()
+
 	for !win.Closed() {
 		win.Clear(colornames.Black)
 
 		parkingController.PaintParking()
 		parkingController.PaintStreet()
 
-		closeEntrance.Draw(win, pixel.IM.Moved(pixel.V(920, 200)))
+		select {
+		case value := <-imageChangeChannel:
+			entranceController.PaintEntrance(value)
+		default:
+			// No se ha enviado un nuevo valor, usa el valor actual
+			entranceController.PaintEntrance(2)
+		}
 
 		win.Update()
+		time.Sleep(time.Second * 5)
 	}
-
 }
 
 func main() {
