@@ -11,6 +11,7 @@ type ParkingView struct {
 	win *pixelgl.Window
 	utils *utils.Utils
 	spaces [20]pixel.Vec
+	questionSpaces [20]pixel.Vec
 }
 
 func NewParkingView(win *pixelgl.Window) *ParkingView {
@@ -41,6 +42,31 @@ func NewParkingView(win *pixelgl.Window) *ParkingView {
 			pixel.V(325, 545),
 			pixel.V(325, 625),
 		},
+		questionSpaces: [20]pixel.Vec{
+			pixel.V(975, 300),
+			pixel.V(975, 385),
+			pixel.V(975, 465),
+			pixel.V(975, 545),
+			pixel.V(975, 625),
+
+			pixel.V(560, 625),
+			pixel.V(560, 545),
+			pixel.V(560, 465),
+			pixel.V(560, 385),
+			pixel.V(560, 300),
+
+			pixel.V(50, 625),
+			pixel.V(50, 545),
+			pixel.V(50, 465),
+			pixel.V(50, 385),
+			pixel.V(50, 300),
+
+			pixel.V(450, 300),
+			pixel.V(450, 385),
+			pixel.V(450, 465),
+			pixel.V(450, 545),
+			pixel.V(450, 625),
+		},
 	}
 }
 
@@ -68,6 +94,6 @@ func (pw *ParkingView) PaintStreet() {
 	street.Draw(pw.win, pixel.IM.Moved(pixel.V(512, 85)))
 }
 
-func (pw *ParkingView) GetCoordinates(n int) *pixel.Vec {
-	return &pw.spaces[n+1]
+func (pw *ParkingView) GetCoordinates(n int) pixel.Vec {
+	return pw.spaces[n]
 }

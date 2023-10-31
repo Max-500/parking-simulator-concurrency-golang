@@ -1,11 +1,14 @@
 package main
 
 import (
-	_"fmt"
+	_ "fmt"
 	_ "image/png"
 	"parking-simulator/controllers"
 	"parking-simulator/models"
+	"parking-simulator/utils"
+	"sync"
 	"time"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -23,19 +26,24 @@ func run() {
 	}
 
 	// Canales
-	carChannel := make(chan models.Car)
+	carChannel := make(chan models.Car, 100)
+	newCarChannelSprite := make(chan utils.CarSprite, 100)
+	entranceChannel := make(chan int)
+
+	// Semaforo para coordinar
+	mu := &sync.Mutex{}
 
 	// Controladores
-	parkingController := controllers.NewParkingController(win)
-	entranceController := controllers.NewEntranceController(win)
-	carController := controllers.NewCarController(win)
+	parkingController := controllers.NewParkingController(win, mu, newCarChannelSprite)
+	entranceController := controllers.NewEntranceController(win, mu)
+	carController := controllers.NewCarController(win, mu)
 
 	carController.LoadSprite()
 
 
-	go parkingController.Park(&carChannel, entranceController, carController)
+	go parkingController.Park(&carChannel, entranceController, carController, &entranceChannel)
 	entranceController.LoadStates()
-	go carController.GenerateCars(30, &carChannel)
+	go carController.GenerateCars(100, &carChannel)
 
 	imageChangeChannel := make(chan int)
 

@@ -13,5 +13,9 @@ func NewEntrance () *Entrance {
 }
 
 func (e *Entrance) GetState() string {
-	return e.states[2]
+	return e.actualState
+}
+
+func (e *Entrance) SetState(n int) {
+	e.actualState = e.states[n]
 }
