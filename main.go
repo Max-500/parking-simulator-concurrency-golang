@@ -1,14 +1,12 @@
 package main
 
 import (
-	_ "fmt"
 	_ "image/png"
 	"parking-simulator/controllers"
 	"parking-simulator/models"
 	"parking-simulator/utils"
 	"sync"
 	"time"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -27,21 +25,21 @@ func run() {
 
 	// Canales
 	carChannel := make(chan models.Car, 100)
-	newCarChannelSprite := make(chan utils.CarSprite, 100)
 	entranceChannel := make(chan int)
+	winChannel := make(chan utils.ImgCar)
 
 	// Semaforo para coordinar
 	mu := &sync.Mutex{}
 
 	// Controladores
-	parkingController := controllers.NewParkingController(win, mu, newCarChannelSprite)
+	parkingController := controllers.NewParkingController(win, mu)
 	entranceController := controllers.NewEntranceController(win, mu)
 	carController := controllers.NewCarController(win, mu)
 
 	carController.LoadSprite()
 
 
-	go parkingController.Park(&carChannel, entranceController, carController, &entranceChannel)
+	go parkingController.Park(&carChannel, entranceController, carController, &entranceChannel, winChannel)
 	entranceController.LoadStates()
 	go carController.GenerateCars(100, &carChannel)
 
@@ -56,6 +54,7 @@ func run() {
 		}
 	}()
 
+	var arr []utils.ImgCar
 	for !win.Closed() {
 		win.Clear(colornames.Black)
 
@@ -65,13 +64,32 @@ func run() {
 		select {
 		case value := <-imageChangeChannel:
 			entranceController.PaintEntrance(value)
-		default:
-			// No se ha enviado un nuevo valor, usa el valor actual
-			entranceController.PaintEntrance(2)
+		}
+
+		select {
+		case val := <-winChannel:
+
+			if val.GetStatus() {
+				arr = append(arr, val)
+			}else{
+				var arrAux []utils.ImgCar
+				for _, value := range arr {
+					if value.GetId() != val.GetId() {
+						arrAux = append(arrAux, value)
+					}
+				}
+				arr = arr[:0]
+				arr = append(arr, arrAux...)
+			}
+		}
+
+		for _, value := range arr {
+			sprite := value.GetSprite()
+			pos := value.GetPos()
+			sprite.Draw(win, pixel.IM.Moved(pos))
 		}
 
 		win.Update()
-		time.Sleep(time.Second * 5)
 	}
 }
 

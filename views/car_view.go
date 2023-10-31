@@ -12,6 +12,11 @@ type CarView struct {
 	sprite *pixel.Sprite
 }
 
+type SpriteCar struct {
+	img *pixel.Sprite
+	Id int
+}
+
 func NewCarView(win *pixelgl.Window) *CarView {
 	return &CarView{
 		win: win,
@@ -26,4 +31,11 @@ func (cw *CarView) SetSprite() {
 func (cw *CarView) PaintCar(pos pixel.Vec) *pixel.Sprite {
 	cw.sprite.Draw(cw.win, pixel.IM.Moved(pos))
 	return cw.sprite
+}
+
+func NewImgCar(spr *pixel.Sprite, Id int) *SpriteCar {
+	return &SpriteCar{
+		img: spr,
+		Id: Id,
+	}
 }
