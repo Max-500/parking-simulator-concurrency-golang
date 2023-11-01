@@ -6,7 +6,6 @@ import (
 	"parking-simulator/models"
 	"parking-simulator/utils"
 	"sync"
-	"time"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -43,28 +42,12 @@ func run() {
 	entranceController.LoadStates()
 	go carController.GenerateCars(100, &carChannel)
 
-	imageChangeChannel := make(chan int)
-
-	go func() {
-		a := 0
-		for {
-			imageChangeChannel <- a
-			a = (a + 1) % 2 // Cambia el valor entre 0 y 1
-			time.Sleep(2 * time.Second)
-		}
-	}()
-
 	var arr []utils.ImgCar
 	for !win.Closed() {
 		win.Clear(colornames.Black)
 
 		parkingController.PaintParking()
 		parkingController.PaintStreet()
-
-		select {
-		case value := <-imageChangeChannel:
-			entranceController.PaintEntrance(value)
-		}
 
 		select {
 		case val := <-winChannel:
